@@ -146,3 +146,9 @@ The output SVG is designed to be used with $\mathsf{\LaTeX}$. If the output file
 $\mathsf{\LaTeX}$ code can be used in almost all places, that are visible in the output. As mentioned above, an action can have a specific line height, which is specified using brackets. This is useful if more complex $\mathsf{\LaTeX}$ formulars are written as actions. An empty action works similar to the $\mathsf{\LaTeX}$ commands `\vspace{1em}` or `\\[1em]`, therefore more advanced typesetting can be achieved.
 
 The actor names are displayed in a bold font style. Because in $\mathsf{\LaTeX}$ math mode is not bold by default, an additional `$\boldsymbol{...}$` is added around math mode to achieve a consistent font style.
+
+Using the `&` character requires the following command to be added to the latex file:
+
+```latex
+\newcommand{\svgamp}{&}
+```
