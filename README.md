@@ -136,7 +136,7 @@ An actor has individual properties, that can be changed. The properties are the 
 
 > **Syntax Property Assignment:**
 > - `["!SET"|"!!"] actor "." property value`
-> - `["!SET"|"!!"] [actor,...] "." property value`
+> - `["!SET"|"!!"] "[" actor,... "]" "." property value`
 > - `["!SET"|"!!"] "*" "." property value`
 
 Setting the width of an actor might be necessary if the content is too wide. It does not automatically scale.
