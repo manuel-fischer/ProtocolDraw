@@ -13,15 +13,22 @@ class Message:
 class Action:
     actor: int
     action: str
-    line_height: float
+    line_height: "float | None"
 
 @dataclass
 class Actor:
     display_text: str
     fg_color: str
     bg_color: str
-    width: "float | None"
+    hl_color: "str | None" = None
+    width: "float | None" = None
+    box_visible: bool = True
+    title_line: bool = True
+    message_space_right: "float | None" = None
 
+
+def or_default(value, default):
+    return value if value is not None else default
 
 def escape_xml(s:str):
     return (s
@@ -45,7 +52,7 @@ def replace_boundaries(s, start, end, new_start, new_end):
         pos = len(s2)
     return s
 
-# makes latex math mode bold
+# makes LaTeX math mode bold
 def make_bold(s: str):
     if "\\boldsymbol" in s or "\\textbf" in s: return s
 
@@ -69,21 +76,81 @@ def fix_amp(s):
             s2 += c
     return s2
 
+
 def convert_to_svg(game_description : str, filename : str, line_offset : int=1) -> str:
     def parsingerror(description, lineno : int, line : str):
         raise Exception(f"Parsing Error: {filename}:{lineno}: {description}\n\t{line}")
 
+    # Push Message or Action, or throw syntax error
+    def parse_message_or_action(l : str):
+        f_colon = l.find(":")
+        if f_colon == -1:
+            parsingerror("invalid syntax, expected action or message", i, l)
+
+        text = l[f_colon+1:].strip()
+        str_actors = l[:f_colon].strip()
+
+        is_left  = "<<" in str_actors
+        is_right = ">>" in str_actors
+
+        if is_left and is_right:
+            parsingerror("message cannot be sent into multiple directions")
+
+        if is_left or is_right: # message
+            actors = str_actors.split("<<" if is_left else ">>")
+
+            if is_left: actors = list(reversed(actors))
+
+            for a in actors:
+                if a not in actor_lookup:
+                    parsingerror(f"unknown actor {a!r}", i, l)
+
+            if len(set(actors)) != len(actors):
+                parsingerror("source and destination actor cannot be the same", i, l)
+
+            msg = text
+            
+            actor_indices = [actor_lookup[a] for a in actors]
+
+            # TODO: elements.append(Message(actor_indices, msg))
+
+            for src, dst in zip(actor_indices[:-1], actor_indices[1:]):
+                elements.append(Message(src, dst, msg))
+
+        
+        else: # action
+            actor = l[:f_colon].strip()
+            if not actor: parsingerror("invalid actor", i, l)
+            actor_line_height = None
+            if actor[-1] == "]": # additional args, like adjustable line height
+                lb = actor.find("[")
+                if lb == -1: parsingerror("invalid actor", i, l)
+                args = actor[lb+1:-1]
+                actor = actor[:lb]
+
+                try: actor_line_height = float(args)
+                except ValueError: parsingerror("invalid line height", i, l)
+
+
+            if actor not in actor_lookup:
+                parsingerror(f"unknown actor {actor!r}", i, l)
+            
+            action = text
+
+            elements.append(Action(actor_lookup[actor], action, actor_line_height))
+
+
     # metrics/layout
     line_height = 20
     name_offset = 1 # in line heights
-    action_offset = 2
+    action_offset = 1.5 # 2
     actor_width = 140
     msg_width = 100
     msg_height = 20
     msg_txtup = 5 # 4
     leftpad = 10
     botmpad = 20
-    rect_ry = 15
+    rect_ry = 10 #15
     synchronize_actors = False
 
 
@@ -95,6 +162,7 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
     lazy_modifiers = []
 
     DEFAULT_COLORS = ["#ddeeff", "#ffeedd", "#eeffdd", "#ffffdd", "#ffddff"]
+    DEFAULT_HIGHLIGHT_COLORS = ["#77aaff", "#ffaa77", "#77ddaa", "#ffff77", "#ff77ff"]
 
     for i_0, l in enumerate(game_description.split('\n')):
         i = i_0 + line_offset
@@ -123,11 +191,31 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 
                 if field == "": parsingerror("expected field name", i, l)
 
-                # parser, apply
+                none = lambda s:None
+                def color(c):
+                    colors = DEFAULT_COLORS
+                    if c[0] == "h":
+                        colors = DEFAULT_HIGHLIGHT_COLORS
+                    try: i = int(c)
+                    except ValueError: return c
+                    return (colors)[i%(len(colors))]
+
+                def boolean(c):
+                    VALUES = {"0": False, "1": True, "false": False, "true": True}
+                    try: return VALUES[c.lower()]
+                    except KeyError:
+                        raise ValueError(f"Invalid boolean value {c!r}")
+
+                # name: (parser, apply)
                 FIELD_MODIFIERS = {
-                    "width":    (float, lambda obj, w: setattr(obj, "width", w)),
-                    "fg-color": (str,   lambda obj, c: setattr(obj, "fg_color", c)),
-                    "bg-color": (str,   lambda obj, c: setattr(obj, "bg_color", c)),
+                    "width":      (float,   lambda obj, w: setattr(obj, "width", w)),
+                    "space":      (float,   lambda obj, w: setattr(obj, "message_space_right", w)),
+                    "fg-color":   (color,   lambda obj, c: setattr(obj, "fg_color", c)),
+                    "bg-color":   (color,   lambda obj, c: setattr(obj, "bg_color", c)),
+                    "hl-color":   (color,   lambda obj, c: setattr(obj, "hl_color", c)),
+                    "title-line": (boolean, lambda obj, b: setattr(obj, "title_line", b)),
+                    "box":        (boolean, lambda obj, b: setattr(obj, "box_visible", b)),
+                    "0":          (none,    lambda obj, _: (setattr(obj, "box_visible", False), setattr(obj, "width", 0.0))),
                 }
                 
                 if field not in FIELD_MODIFIERS:
@@ -171,6 +259,9 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 if not name: parsingerror("invalid actor name")
                 
                 fg_color, bg_color = "#000000", DEFAULT_COLORS[len(actors)%len(DEFAULT_COLORS)] #"#dddddd"
+                hl_color = None
+                #bg_color, hl_color = "#ffffff", DEFAULT_HIGHLIGHT_COLORS[len(actors)%len(DEFAULT_HIGHLIGHT_COLORS)]
+                #hl_color = "#ffffff"
                 if name[-1] == "]": # additional args
                     lb = name.find("[")
                     if lb == -1: parsingerror("invalid actor name", i, l)
@@ -182,65 +273,14 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                     fg_color, bg_color = args
 
                 actor_index = len(actors)
-                actors.append(Actor(display_text, fg_color, bg_color, None))
+                actors.append(Actor(display_text, fg_color, bg_color, hl_color))
                 actor_lookup[name] = actor_index
                 continue
             
             parsingerror(f"unknown command {cmd!r}", i, l)
             
 
-        f_colon = l.find(":")
-        if f_colon == -1:
-            parsingerror("invalid syntax, expected action or message", i, l)
-
-        f_msgl = l.find("<<")
-        f_msgr = l.find(">>")
-        if f_msgl != -1 and f_msgr != -1:
-            if f_msgl < f_msgr: f_msgr = -1
-            else:               f_msgl = -1
-
-        if f_msgl != -1 and f_msgl > f_colon: f_msgl = -1
-        if f_msgr != -1 and f_msgr > f_colon: f_msgr = -1
-        
-        if f_msgl != -1 or f_msgr != -1: # message
-            f_msg = f_msgl if f_msgl != -1 else f_msgr
-            lhs = l[:f_msg].strip()
-            rhs = l[f_msg+2:f_colon].strip()
-
-            src, dst = (rhs, lhs) if f_msgl != -1 else (lhs, rhs)
-
-            if src not in actor_lookup:
-                parsingerror(f"unknown source actor {src!r}", i, l)
-            if dst not in actor_lookup:
-                parsingerror(f"unknown destination actor {dst!r}", i, l)
-            
-            if src == dst:
-                parsingerror("source and destination actor cannot be the same", i, l)
-
-            msg = l[f_colon+1:].strip()
-            
-            elements.append(Message(actor_lookup[src], actor_lookup[dst], msg))
-        
-        else: # action
-            actor = l[:f_colon].strip()
-            if not actor: parsingerror("invalid actor", i, l)
-            actor_line_height = 1
-            if actor[-1] == "]": # additional args, like adjustable line height
-                lb = actor.find("[")
-                if lb == -1: parsingerror("invalid actor", i, l)
-                args = actor[lb+1:-1]
-                actor = actor[:lb]
-
-                try: actor_line_height = float(args)
-                except ValueError: parsingerror("invalid line height", i, l)
-
-
-            if actor not in actor_lookup:
-                parsingerror(f"unknown actor {actor!r}", i, l)
-            
-            action = l[f_colon+1:].strip()
-
-            elements.append(Action(actor_lookup[actor], action, actor_line_height))
+        parse_message_or_action(l)
 
     
     ##### finished parsing, update lazy properties #####
@@ -269,9 +309,9 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
         content = escape_xml(fix_amp(text))
         return f"""<text style="text-align:{align};text-anchor:{anchor};fill:{color}{more_style}" x="{x}" y="{y}">{content}</text>\n"""
 
-    def line(x0, y0, x1, y1):
+    def line(x0, y0, x1, y1, color="#000000"):
         #return f"""<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}" stroke="black" />\n"""
-        return f"""<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}" style="stroke:#000000;stroke-width:{stroke_width}px" />\n"""
+        return f"""<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}" style="stroke:{color};stroke-width:{stroke_width}px" />\n"""
 
     # x, y in alternating order
     def path(*points):
@@ -289,16 +329,18 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
             path(x1d, y0-t, x11, y0, x1d, y0+t)
         )
 
-    def rect(x, y, w, h, ry, color):
-        return f"""<rect style="fill:{color};stroke:#000000;stroke-width:{stroke_width}px" width="{w}" height="{h}" x="{x}" y="{y}" ry="{ry}" />\n"""
+    def rect(x, y, w, h, ry, color, stroke_width : "int|None" = stroke_width):
+        stroke = ""
+        if stroke_width is not None: stroke = f";stroke:#000000;stroke-width:{stroke_width}px"
+        return f"""<rect style="fill:{color}{stroke}" width="{w}" height="{h}" x="{x}" y="{y}" ry="{ry}" />\n"""
 
     def actor_left(i):
         #return i*(actor_width+msg_width)
-        return sum((a.width or actor_width) + msg_width for a in actors[:i])
+        return sum((or_default(a.width, actor_width)) + or_default(a.message_space_right, msg_width) for a in actors[:i])
     
     def actor_right(i):
         #return actor_left(i)+actor_width
-        return actor_left(i) + (actors[i].width or actor_width)
+        return actor_left(i) + or_default(actors[i].width, actor_width)
 
     def actor_center(i):
         return (actor_left(i)+actor_right(i))/2
@@ -336,7 +378,7 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 sx = actor_left(s)
                 dx = actor_right(d)
 
-            y = cursor+msg_height/2
+            y = cursor+msg_height*0.5
             draw_elements += arrow(sx, y, dx, y)
             text_elements += text((sx+dx)/2, y-msg_txtup,
                 adjust="center", 
@@ -344,11 +386,22 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 text=e.msg)#f"{{\\footnotesize {e.msg}}}")
 
         elif isinstance(e, Action):
-            cursor = actor_cursors[e.actor]
-            actor_cursors[e.actor] = cursor + e.line_height*line_height
-            y = cursor+(0.5+e.line_height/2)*line_height
+            action = e.action
 
-            if action := e.action:
+            is_line = len(action) >= 3 and action.strip("-") == "" # action == "-"*len(action)
+
+            e_line_height = e.line_height
+            if e_line_height is None: e_line_height = 0.25 if is_line else 1
+
+            cursor = actor_cursors[e.actor]
+            actor_cursors[e.actor] = cursor + e_line_height*line_height
+
+            if is_line:
+                # TODO: better
+                y = cursor+0.5*e_line_height*line_height + line_height*0.3
+                draw_elements += line(actor_left(e.actor)+leftpad, y, actor_right(e.actor)-leftpad, y, actor.fg_color)
+            elif action:
+                y = cursor+(0.5+e_line_height*0.5)*line_height
                 bold = False
                 italic = False
 
@@ -388,7 +441,21 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
     # put boundaries around actors
     rect_elements = ""
     for i, actor in enumerate(actors):
-        rect_elements += rect(actor_left(i), 0, actor.width or actor_width, svgh, rect_ry, actor.bg_color)
+        if actor.box_visible:
+            lt = actor_left(i)
+            wd = or_default(actor.width, actor_width)
+            pd = 3
+            outer_rect = (lt, 0, wd, svgh)
+            inner_rect = (lt+pd, pd, wd-2*pd, svgh-2*pd)
+
+            if actor.hl_color is not None:
+                rect_elements += rect(*outer_rect, rect_ry, actor.hl_color)
+                rect_elements += rect(*inner_rect, rect_ry-pd, actor.bg_color, None)
+            else:
+                rect_elements += rect(*outer_rect, rect_ry, actor.bg_color)
+            if actor.title_line:
+                y = 30
+                rect_elements += line(lt+leftpad, y, lt+wd-leftpad, y, actor.fg_color)
 
     svg = rect_elements + draw_elements + text_elements
 

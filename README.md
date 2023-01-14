@@ -24,8 +24,8 @@ Actors get defined with the `!ACTOR`-command, the command takes a name and the t
 Messages can be sent between actors using the operators `>>` or `<<`, those define the direction of the message transfer. Here the names of the actors need to be specified.
 
 > **Syntax Message:** 
-> - `source ">>" target ":" message`
-> - `target "<<" source ":" message`
+> - `source (">>" target)+ ":" message`
+> - `target ("<<" source)+ ":" message`
 
 ```
 # Communication between Alice and Bob
@@ -106,15 +106,31 @@ A[-1]:
 # line height of 2
 A[2]: This text gets centered vertically on two lines
 
+# fractional line height
+A[0.5]:
+
+# Horizontal lines, default line height of 0.25
+A:---
+
+A[1]:---
 ```
 
 ### Actor Style Properties
 
 An actor has individual properties, that can be changed. The properties are the following:
 
+**Basic Properties**
+
 - `fg-color`: The color of the text, SVG color name or hex code like `#99ccff`. Default color is black.
 - `bg-color`: The background color of the actor, SVG color name or hex code. On default, this color is selected from the color palette `#ddeeff, #ffeedd, #eeffdd, #ffffdd, #ffddff` in a cyclical way.
+- `hl-color`: The highlight color of the actor, visible around the border.
 - `width`: The width of the actor in pixels, default `140`.
+- `box`: Boolean value (`0` or `1`) if the box should be drawn, default `1`.
+- `space`: The width of the space on the right of the actor, default `100`.
+
+**Shortcuts**
+
+- `0`: Shortcut for `!!A.box 0` and `!!A.width 0`
 
 > **Syntax Property Assignment:**
 > - `["!SET"|"!!"] actor "." property value`
@@ -147,7 +163,7 @@ $\mathsf{\LaTeX}$ code can be used in almost all places, that are visible in the
 
 The actor names are displayed in a bold font style. Because in $\mathsf{\LaTeX}$ math mode is not bold by default, an additional `$\boldsymbol{...}$` is added around math mode to achieve a consistent font style.
 
-Using the `&` character requires the following command to be added to the latex file:
+Using the `&` character requires the following command to be added to the $\mathsf{\LaTeX}$ file:
 
 ```latex
 \newcommand{\svgamp}{&}
