@@ -124,7 +124,7 @@ An actor has individual properties, that can be changed. The properties are the 
 **Basic Properties**
 
 - `fg-color`: The color of the text, SVG color name or hex code like `#99ccff`. Default color is black.
-- `bg-color`: The background color of the actor, SVG color name or hex code. On default, this color is selected from the color palette <code style="background:#ddeeff;color:black">#ddeeff</code>, <code style="background:#ffeedd;color:black">#ffeedd</code>, <code style="background:#eeffdd;color:black">#eeffdd</code>, <code style="background:#ffffdd;color:black">#ffffdd</code>, <code style="background:#ffddff;color:black">#ffddff</code> in a cyclical way.
+- `bg-color`: The background color of the actor, SVG color name or hex code. On default, this color is selected from the color palette <span style="background:#ddeeff;color:black">#ddeeff</span>, <span style="background:#ffeedd;color:black">#ffeedd</span>, <span style="background:#eeffdd;color:black">#eeffdd</span>, <span style="background:#ffffdd;color:black">#ffffdd</span>, <span style="background:#ffddff;color:black">#ffddff</span> in a cyclical way.
 - `hl-color`: The highlight color of the actor, visible around the border.
 - `width`: The width of the actor in pixels, default `140`.
 - `box`: Boolean value (`0` or `1`) if the box should be drawn, default `1`.
