@@ -87,7 +87,9 @@ Whitespaces have no effect on formatting, empty lines are ignored and surroundin
 
 To center an action relative to the actor, the action needs to be surrounded by degree signs.
 
-Lines have a default height of 1, the height can be overridden by adding it into brackets after the name of the actor.
+Usual actions have a default line height of 1 unit, the height can be overridden by adding it into brackets after the name of the actor.
+
+Using at least 3 `---` as an action would result in a horizontal line, its spacing height defaults to 0.25 units.
 
 ```
 !ACTOR A Alice
