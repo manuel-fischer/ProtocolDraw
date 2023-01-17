@@ -29,9 +29,9 @@ Messages can be sent between actors using the operators `>>` or `<<`, those defi
 
 
 
-<center>
+<p align="center">
 <img width="38%" src="rendered/communication.svg">
-</center>
+</p>
 
 `communication.txt`
 
@@ -53,9 +53,9 @@ An actor can contain actions like computations or comments:
 > **Syntax Action:** 
 > - `actor ["[" height "]"] ":" action`
 
-<center>
+<p align="center">
 <img width="38%" src="rendered/actions.svg">
-</center>
+</p>
 
 `actions.txt`
 
@@ -80,9 +80,9 @@ TODO
 ### Font style
 A single action can be formatted in the following ways:
 
-<center>
+<p align="center">
 <img width="14%" src="rendered/font_style.svg">
-</center>
+</p>
 
 `font_style.txt`
 
@@ -111,9 +111,9 @@ Usual actions have a default line height of 1 unit, the height can be overridden
 
 Using at least 3 `---` as an action would result in a horizontal line, its spacing height defaults to 0.25 units.
 
-<center>
+<p align="center">
 <img width="14%" src="rendered/layout.svg">
-</center>
+</p>
 
 `layout.txt`
 
@@ -170,9 +170,9 @@ Setting the width of an actor might be necessary if the content is too wide. It 
 
 A property can be set using the following syntax, (`!!` is a shorthand for `!SET`):
 
-<center>
+<p align="center">
 <img width="40%" src="rendered/properties.svg">
-</center>
+</p>
 
 `properties.txt`
 
