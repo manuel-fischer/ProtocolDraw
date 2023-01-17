@@ -155,6 +155,7 @@ An actor has individual properties, that can be changed. The properties are the 
 - `hl-color`: The highlight color of the actor, visible around the border.
 - `width`: The width of the actor in pixels, default `140`.
 - `box`: Boolean value (`0` or `1`) if the box should be drawn, default `1`.
+- `title-line`: Boolean value if the line below the title of the actor should be drawn, default `1`.
 - `space`: The width of the space on the right of the actor, default `100`.
 
 **Shortcuts**

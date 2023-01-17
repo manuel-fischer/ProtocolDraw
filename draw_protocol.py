@@ -164,6 +164,8 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
     DEFAULT_COLORS = ["#ddeeff", "#ffeedd", "#eeffdd", "#ffffdd", "#ffddff"]
     DEFAULT_HIGHLIGHT_COLORS = ["#77aaff", "#ffaa77", "#77ddaa", "#ffff77", "#ff77ff"]
 
+    line_color = "black" # default color for messages and borders of actors
+
     for i_0, l in enumerate(game_description.split('\n')):
         i = i_0 + line_offset
         l = l.strip()
@@ -251,7 +253,13 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
 
             # default actorwidth
             if cmd.upper() == "ACTORWIDTH":
+                print("Warning: '!ACTORWIDTH' is deprecated and might be removed")
                 actor_width = float(args)
+                continue
+
+            if cmd.upper() == "LINECOLOR":
+                print("Warning: '!LINECOLOR' is experimental and might be changed")
+                line_color = args
                 continue
 
             if cmd.upper() == "ACTOR":
@@ -309,29 +317,29 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
         content = escape_xml(fix_amp(text))
         return f"""<text style="text-align:{align};text-anchor:{anchor};fill:{color}{more_style}" x="{x}" y="{y}">{content}</text>\n"""
 
-    def line(x0, y0, x1, y1, color="#000000"):
+    def line(x0, y0, x1, y1, color):
         #return f"""<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}" stroke="black" />\n"""
         return f"""<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}" style="stroke:{color};stroke-width:{stroke_width}px" />\n"""
 
     # x, y in alternating order
-    def path(*points):
+    def path(*points, color):
         assert points and len(points) % 2 == 0
         d = "M" + " ".join(f"{x},{y}" for x,y in zip(points[0::2],points[1::2]))
-        return f"""<path d="{d}" style="fill:none;stroke:#000000;stroke-width:{stroke_width}px" />\n"""
+        return f"""<path d="{d}" style="fill:none;stroke:{color};stroke-width:{stroke_width}px" />\n"""
 
-    def arrow(x0, y0, x1, y1):
+    def arrow(x0, y0, x1, y1, color):
         t = 5
         e = 0.5
         x11 = x1+e if x1 < x0 else x1-e
         x1d = x1+t+e if x1 < x0 else x1-t-e
         return (
-            line(x0, y0, x1, y1) +
-            path(x1d, y0-t, x11, y0, x1d, y0+t)
+            line(x0, y0, x1, y1, color) +
+            path(x1d, y0-t, x11, y0, x1d, y0+t, color=color)
         )
 
-    def rect(x, y, w, h, ry, color, stroke_width : "int|None" = stroke_width):
+    def rect(x, y, w, h, ry, color, stroke_width : "int|None" = stroke_width, border_color="#000000"):
         stroke = ""
-        if stroke_width is not None: stroke = f";stroke:#000000;stroke-width:{stroke_width}px"
+        if stroke_width is not None: stroke = f";stroke:{border_color};stroke-width:{stroke_width}px"
         return f"""<rect style="fill:{color}{stroke}" width="{w}" height="{h}" x="{x}" y="{y}" ry="{ry}" />\n"""
 
     def actor_left(i):
@@ -379,10 +387,10 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 dx = actor_right(d)
 
             y = cursor+msg_height*0.5
-            draw_elements += arrow(sx, y, dx, y)
+            draw_elements += arrow(sx, y, dx, y, line_color)
             text_elements += text((sx+dx)/2, y-msg_txtup,
                 adjust="center", 
-                color="#000000",
+                color=line_color,
                 text=e.msg)#f"{{\\footnotesize {e.msg}}}")
 
         elif isinstance(e, Action):
@@ -449,10 +457,10 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
             inner_rect = (lt+pd, pd, wd-2*pd, svgh-2*pd)
 
             if actor.hl_color is not None:
-                rect_elements += rect(*outer_rect, rect_ry, actor.hl_color)
+                rect_elements += rect(*outer_rect, rect_ry, actor.hl_color, border_color=line_color)
                 rect_elements += rect(*inner_rect, rect_ry-pd, actor.bg_color, None)
             else:
-                rect_elements += rect(*outer_rect, rect_ry, actor.bg_color)
+                rect_elements += rect(*outer_rect, rect_ry, actor.bg_color, border_color=line_color)
             if actor.title_line:
                 y = 30
                 rect_elements += line(lt+leftpad, y, lt+wd-leftpad, y, actor.fg_color)

@@ -1,3 +1,6 @@
+# The following line is for dark mode on github, !LINECOLOR might be changed in the future
+!LINECOLOR #aaaaaa
+
 # Communication between Alice and Bob
 
 !ACTOR A Alice
