@@ -1,0 +1,15 @@
+<svg viewBox="-0.5 -0.5 401.0 71.0" xmlns="http://www.w3.org/2000/svg">
+<rect style="fill:white;stroke:#000000;stroke-width:1px" width="100.0" height="70.0" x="20.0" y="0" ry="10" />
+<line x1="30.0" y1="30" x2="110.0" y2="30" style="stroke:#000000;stroke-width:1px" />
+<rect style="fill:#108020;stroke:#000000;stroke-width:1px" width="140" height="70.0" x="140.0" y="0" ry="10" />
+<line x1="150.0" y1="30" x2="270.0" y2="30" style="stroke:white;stroke-width:1px" />
+<rect style="fill:white;stroke:#000000;stroke-width:1px" width="100.0" height="70.0" x="300.0" y="0" ry="10" />
+<line x1="310.0" y1="30" x2="390.0" y2="30" style="stroke:#000000;stroke-width:1px" />
+<line x1="0.0" y1="40.0" x2="20.0" y2="40.0" style="stroke:#000000;stroke-width:1px" />
+<path d="M14.5,35.0 19.5,40.0 14.5,45.0" style="fill:none;stroke:#000000;stroke-width:1px" />
+<text style="text-align:center;text-anchor:middle;fill:#000000;font-weight:bold" x="0.0" y="20"></text>
+<text style="text-align:center;text-anchor:middle;fill:#000000;font-weight:bold" x="70.0" y="20">A</text>
+<text style="text-align:center;text-anchor:middle;fill:white;font-weight:bold" x="210.0" y="20">B</text>
+<text style="text-align:center;text-anchor:middle;fill:#000000;font-weight:bold" x="350.0" y="20">C</text>
+<text style="text-align:center;text-anchor:middle;fill:#000000" x="10.0" y="35.0"></text>
+</svg>

@@ -1,0 +1,24 @@
+!ACTOR A Alice
+
+# center line using the degree sign
+A: °centered°
+
+# skip a line
+A:
+
+# No effect
+A[0]:
+
+# move following line upwards
+A[-1]:
+
+# line height of 2, text gets centered vertically on two lines
+A[2]: centered vertically
+
+# fractional line height
+A[0.5]:
+
+# Horizontal lines, default line height of 0.25
+A:---
+
+A[1]:---

@@ -1,0 +1,22 @@
+!ACTOR null
+!ACTOR A A
+!ACTOR B B
+!ACTOR C C
+
+# Specific actor
+!SET B.fg-color white
+# Multiple actors
+!SET [A,C].width 100
+# All actors
+!SET *.space 20
+!SET *.bg-color white
+
+# Properties apply in the order of their definition.
+# Later property assignmens override prior ones. 
+!SET B.bg-color #108020
+
+# Using shortcuts
+!!null.0
+
+null>>A:
+A:

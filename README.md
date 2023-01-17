@@ -27,6 +27,14 @@ Messages can be sent between actors using the operators `>>` or `<<`, those defi
 > - `source (">>" target)+ ":" message`
 > - `target ("<<" source)+ ":" message`
 
+
+
+<div style="text-align:center">
+<img src="rendered/communication.svg">
+</div>
+
+`communication.txt`
+
 ```
 # Communication between Alice and Bob
 
@@ -44,6 +52,12 @@ An actor can contain actions like computations or comments:
 
 > **Syntax Action:** 
 > - `actor ["[" height "]"] ":" action`
+
+<div style="text-align:center">
+<img src="rendered/actions.svg">
+</div>
+
+`actions.txt`
 
 ```
 !ACTOR A Alice
@@ -65,6 +79,12 @@ TODO
 
 ### Font style
 A single action can be formatted in the following ways:
+
+<div style="text-align:center">
+<img src="rendered/font_style.svg">
+</div>
+
+`font_style.txt`
 
 ```md
 !ACTOR A Alice
@@ -91,10 +111,17 @@ Usual actions have a default line height of 1 unit, the height can be overridden
 
 Using at least 3 `---` as an action would result in a horizontal line, its spacing height defaults to 0.25 units.
 
+<div style="text-align:center">
+<img src="rendered/layout.svg">
+</div>
+
+`layout.txt`
+
 ```
 !ACTOR A Alice
 
-A: °centered (degree sign)°
+# center line using the degree sign
+A: °centered°
 
 # skip a line
 A:
@@ -105,8 +132,8 @@ A[0]:
 # move following line upwards
 A[-1]:
 
-# line height of 2
-A[2]: This text gets centered vertically on two lines
+# line height of 2, text gets centered vertically on two lines
+A[2]: centered vertically
 
 # fractional line height
 A[0.5]:
@@ -143,17 +170,35 @@ Setting the width of an actor might be necessary if the content is too wide. It 
 
 A property can be set using the following syntax, (`!!` is a shorthand for `!SET`):
 
+<div style="text-align:center">
+<img src="rendered/properties.svg">
+</div>
+
+`properties.txt`
+
 ```
+!ACTOR null
 !ACTOR A A
 !ACTOR B B
 !ACTOR C C
 
 # Specific actor
-!SET A.fg-color blue
+!SET B.fg-color white
 # Multiple actors
-!SET [B,C].width 200
+!SET [A,C].width 100
 # All actors
+!SET *.space 20
 !SET *.bg-color white
+
+# Properties apply in the order of their definition.
+# Later property assignmens override prior ones. 
+!SET B.bg-color #108020
+
+# Using shortcuts
+!!null.0
+
+null>>A:
+A:
 ```
 
 
@@ -170,3 +215,6 @@ Using the `&` character requires the following command to be added to the $\math
 ```latex
 \newcommand{\svgamp}{&}
 ```
+
+
+<!--TODO: Example demonstrating LaTeX math mode-->

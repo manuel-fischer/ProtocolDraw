@@ -1,0 +1,9 @@
+!ACTOR A Alice
+!ACTOR B Bob
+
+A>>B: n=10
+B: Compute Fibonacci for n=10
+A<<B: 55
+A: Alice is now happy
+A: to know the 10th
+A: Fibonacci number

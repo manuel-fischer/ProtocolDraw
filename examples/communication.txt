@@ -1,0 +1,7 @@
+# Communication between Alice and Bob
+
+!ACTOR A Alice
+!ACTOR B Bob
+
+A>>B: "Hello Bob"
+A<<B: "Hi Alice"

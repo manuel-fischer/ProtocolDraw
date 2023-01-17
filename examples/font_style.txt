@@ -1,0 +1,8 @@
+!ACTOR A Alice
+
+A: **bold**
+A: __bold__
+A: *italic*
+A: _italic_
+A: **_bold italic_**
+A: and so on
