@@ -21,10 +21,10 @@
 <path d="M145.5,55.0 140.5,60.0 145.5,65.0" style="fill:none;stroke-width:1px" class="style2" />
 <text style="text-align:center;text-anchor:middle;font-weight:bold" x="70.0" y="20" class="style1">Alice</text>
 <text style="text-align:center;text-anchor:middle;font-weight:bold" x="310.0" y="20" class="style1">Bob</text>
-<text style="text-align:center;text-anchor:middle" x="190.0" y="35.0" class="style1">n=10</text>
-<text style="text-align:start;text-anchor:start" x="250" y="50.0" class="style1">Compute Fibonacci for n=10</text>
-<text style="text-align:center;text-anchor:middle" x="190.0" y="55.0" class="style1">55</text>
-<text style="text-align:start;text-anchor:start" x="10" y="70.0" class="style1">Alice is now happy</text>
-<text style="text-align:start;text-anchor:start" x="10" y="90.0" class="style1">to know the 10th</text>
-<text style="text-align:start;text-anchor:start" x="10" y="110.0" class="style1">Fibonacci number</text>
+<text style="text-align:center;text-anchor:middle" x="190.0" y="35.0" class="style1">n=5</text>
+<text style="text-align:start;text-anchor:start" x="250" y="50.0" class="style1">1·2·3·4·5=120</text>
+<text style="text-align:center;text-anchor:middle" x="190.0" y="55.0" class="style1">120</text>
+<text style="text-align:start;text-anchor:start" x="10" y="70.0" class="style1">Alice is now</text>
+<text style="text-align:start;text-anchor:start" x="10" y="90.0" class="style1">happy to know</text>
+<text style="text-align:start;text-anchor:start" x="10" y="110.0" class="style1">5!</text>
 </svg>

@@ -3,9 +3,9 @@
 !ACTOR A Alice
 !ACTOR B Bob
 
-A>>B: n=10
-B: Compute Fibonacci for n=10
-A<<B: 55
-A: Alice is now happy
-A: to know the 10th
-A: Fibonacci number
+A>>B: n=5
+B: 1·2·3·4·5=120
+A<<B: 120
+A: Alice is now
+A: happy to know
+A: 5!

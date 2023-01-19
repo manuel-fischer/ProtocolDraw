@@ -63,12 +63,12 @@ An actor can contain actions like computations or comments:
 !ACTOR A Alice
 !ACTOR B Bob
 
-A>>B: n=10
-B: Compute Fibonacci for n=10
-A<<B: 55
-A: Alice is now happy
-A: to know the 10th
-A: Fibonacci number
+A>>B: n=5
+B: 1·2·3·4·5=120
+A<<B: 120
+A: Alice is now
+A: happy to know
+A: 5!
 ```
 
 <!--## Actor Lifetime
@@ -133,7 +133,7 @@ A[0]:
 A[-1]:
 
 # line height of 2, text gets centered vertically on two lines
-A[2]: centered vertically
+A[2]: even spacing
 
 # fractional line height
 A[0.5]:

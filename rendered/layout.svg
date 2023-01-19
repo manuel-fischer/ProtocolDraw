@@ -15,5 +15,5 @@
 <line x1="10" y1="121.0" x2="130" y2="121.0" style="stroke_width:1px" class="style2" />
 <text style="text-align:center;text-anchor:middle;font-weight:bold" x="70.0" y="20" class="style1">Alice</text>
 <text style="text-align:center;text-anchor:middle" x="70.0" y="50.0" class="style1">centered</text>
-<text style="text-align:start;text-anchor:start" x="10" y="80.0" class="style1">centered vertically</text>
+<text style="text-align:start;text-anchor:start" x="10" y="80.0" class="style1">even spacing</text>
 </svg>

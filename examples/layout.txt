@@ -15,7 +15,7 @@ A[0]:
 A[-1]:
 
 # line height of 2, text gets centered vertically on two lines
-A[2]: centered vertically
+A[2]: even spacing
 
 # fractional line height
 A[0.5]:
