@@ -9,4 +9,4 @@ all: $(SVG_FILES)
 
 
 rendered/%.svg: examples/%.txt
-	python3 draw_protocol.py $< -o $@
+	python3 ./draw_protocol.py $< -o $@

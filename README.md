@@ -71,9 +71,9 @@ A: to know the 10th
 A: Fibonacci number
 ```
 
-## Actor Lifetime
+<!--## Actor Lifetime
 
-TODO
+TODO-->
 
 ## Formatting
 
@@ -144,6 +144,13 @@ A:---
 A[1]:---
 ```
 
+<!--TODO:
+
+- Right Alignment with `A: right°`, but not `A: right\°`
+- Indentation with `A: > indented`, render vertical line on the left
+
+-->
+
 ### Actor Style Properties
 
 An actor has individual properties, that can be changed. The properties are the following:
@@ -185,8 +192,11 @@ A property can be set using the following syntax, (`!!` is a shorthand for `!SET
 
 # Specific actor
 !SET B.fg-color white
+
 # Multiple actors
 !SET [A,C].width 100
+!SET [A,C].fg-color black
+
 # All actors
 !SET *.space 20
 !SET *.bg-color white
@@ -202,6 +212,27 @@ null>>A:
 A:
 ```
 
+## Preprocessor
+
+Common declarations might be specified in a shared header file. Such a header file can be included using the `!INCLUDE` command. There are the following default include files:
+
+> **Syntax File Inclusion**
+>
+> - `!INCLUDE <filename>`
+
+**Default Include Files**
+- `!INCLUDE themes/dark.txt` — Changes the colors to a dark mode theme. The default color palette is changed to `#223366` ${\color{#223366}\blacksquare}\hspace{-0.75em}\square$, `#663322` ${\color{#663322}\blacksquare}\hspace{-0.75em}\square$, `#336622` ${\color{#336622}\blacksquare}\hspace{-0.75em}\square$, `#666622` ${\color{#666622}\blacksquare}\hspace{-0.75em}\square$, `#662266` ${\color{#662266}\blacksquare}\hspace{-0.75em}\square$.
+
+
+**Include Paths**
+1. If the filename is an explicit relative or absolute path. The corresponding path is always used. A path is considered relative if it starts with `./` or `../`, a path is considered absolute if it starts with `/` or a drive letter like `C:`.
+2. Otherwise the file is searched in the default include files, if it was not found, the file is opened as a relative file.
+
+
+
+<!--TODO:
+- Indented blocks like in YAML using `A: |`, preserves linefeeds
+-->
 
 ## $\mathsf{\LaTeX}$ support
 

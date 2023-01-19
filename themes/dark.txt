@@ -1,0 +1,5 @@
+# The following line is for dark mode on github, !LINECOLOR might be changed in the future
+!LINECOLOR #eeeeee
+!!*.fg-color #eeeeee
+
+!DEFAULT_COLORS #223366 #663322 #336622 #666622 #662266

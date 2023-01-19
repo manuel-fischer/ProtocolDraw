@@ -1,5 +1,4 @@
-# The following line is for dark mode on github, !LINECOLOR might be changed in the future
-!LINECOLOR #aaaaaa
+!INCLUDE themes/dark.txt
 
 !ACTOR null
 !ACTOR A A
@@ -8,8 +7,11 @@
 
 # Specific actor
 !SET B.fg-color white
+
 # Multiple actors
 !SET [A,C].width 100
+!SET [A,C].fg-color black
+
 # All actors
 !SET *.space 20
 !SET *.bg-color white

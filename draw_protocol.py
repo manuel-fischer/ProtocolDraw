@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+from typing import Tuple
 
 # add `\newcommand{\svgamp}{&}` to use matrix-environments in latex
 
@@ -77,15 +78,47 @@ def fix_amp(s):
     return s2
 
 
+
+INCLUDE_PATHS = [
+    os.path.dirname(os.path.abspath(__file__)),
+]
+
+
+def is_path_relative(filename):
+    filename.replace(os.sep, "/")
+    return filename.startswith("./") or filename.startswith("../")
+
+def is_path_absolute(filename):
+    filename.replace(os.sep, "/")
+
+    if filename.startswith("/"): return True
+
+    # check if drive
+    if len(filename) >= 2 and 'A' <= filename[0].upper() <= 'Z' and filename[1] == ":": return True
+    
+    return False
+
+def find_include_file(filename):
+    if not is_path_relative(filename) and not is_path_absolute(filename):
+        for ip in INCLUDE_PATHS:
+            a_path = os.path.join(ip, filename)
+            if os.path.exists(a_path):
+                return a_path
+    return filename
+
+LineLocation = Tuple[str, int]
+
+
 def convert_to_svg(game_description : str, filename : str, line_offset : int=1) -> str:
-    def parsingerror(description, lineno : int, line : str):
+    def parsingerror(description, location : LineLocation, line : str):
+        filename, lineno = location
         raise Exception(f"Parsing Error: {filename}:{lineno}: {description}\n\t{line}")
 
     # Push Message or Action, or throw syntax error
-    def parse_message_or_action(l : str):
+    def parse_message_or_action(loc : LineLocation, l : str):
         f_colon = l.find(":")
         if f_colon == -1:
-            parsingerror("invalid syntax, expected action or message", i, l)
+            parsingerror("invalid syntax, expected action or message", loc, l)
 
         text = l[f_colon+1:].strip()
         str_actors = l[:f_colon].strip()
@@ -94,7 +127,7 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
         is_right = ">>" in str_actors
 
         if is_left and is_right:
-            parsingerror("message cannot be sent into multiple directions")
+            parsingerror("message cannot be sent into multiple directions", loc, l)
 
         if is_left or is_right: # message
             actors = str_actors.split("<<" if is_left else ">>")
@@ -103,10 +136,10 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
 
             for a in actors:
                 if a not in actor_lookup:
-                    parsingerror(f"unknown actor {a!r}", i, l)
+                    parsingerror(f"unknown actor {a!r}", loc, l)
 
             if len(set(actors)) != len(actors):
-                parsingerror("source and destination actor cannot be the same", i, l)
+                parsingerror("source and destination actor cannot be the same", loc, l)
 
             msg = text
             
@@ -120,20 +153,20 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
         
         else: # action
             actor = l[:f_colon].strip()
-            if not actor: parsingerror("invalid actor", i, l)
+            if not actor: parsingerror("invalid actor", loc, l)
             actor_line_height = None
             if actor[-1] == "]": # additional args, like adjustable line height
                 lb = actor.find("[")
-                if lb == -1: parsingerror("invalid actor", i, l)
+                if lb == -1: parsingerror("invalid actor", loc, l)
                 args = actor[lb+1:-1]
                 actor = actor[:lb]
 
                 try: actor_line_height = float(args)
-                except ValueError: parsingerror("invalid line height", i, l)
+                except ValueError: parsingerror("invalid line height", loc, l)
 
 
             if actor not in actor_lookup:
-                parsingerror(f"unknown actor {actor!r}", i, l)
+                parsingerror(f"unknown actor {actor!r}", loc, l)
             
             action = text
 
@@ -166,8 +199,20 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
 
     line_color = "black" # default color for messages and borders of actors
 
-    for i_0, l in enumerate(game_description.split('\n')):
-        i = i_0 + line_offset
+    include_file = None 
+    def line_stream(line_offset, filename, code):
+        nonlocal include_file
+        for i_0, l in enumerate(code.split('\n')):
+            yield (i_0 + line_offset, filename), l
+
+            while include_file is not None:
+                inc_filename, include_file = include_file, None
+                with open(find_include_file(inc_filename), "rt") as f:
+                    included_content = f.read()
+
+                yield from line_stream(1, inc_filename, included_content)
+
+    for loc, l in line_stream(line_offset, filename, game_description):
         l = l.strip()
         if not l: continue
 
@@ -185,13 +230,13 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 object, fieldvalue = splitonce(args, ".")
                 object = object.strip()
                 if object[:1] == "[": # multiple objects
-                    if object[-1:] != "]": parsingerror("expected matching ']'", i, l) 
+                    if object[-1:] != "]": parsingerror("expected matching ']'", loc, l) 
                     objects = [a.strip() for a in object[1:-1].split(",")]
                 else:
                     objects = [object.strip()]
                 field, value = splitonce(fieldvalue)
                 
-                if field == "": parsingerror("expected field name", i, l)
+                if field == "": parsingerror("expected field name", loc, l)
 
                 none = lambda s:None
                 def color(c):
@@ -221,16 +266,16 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 }
                 
                 if field not in FIELD_MODIFIERS:
-                    parsingerror(f"unknown field name {field!r}", i, l)
+                    parsingerror(f"unknown field name {field!r}", loc, l)
 
-                def do_modify(actor_name, val, mod_apply, i, l):
+                def do_modify(actor_name, val, mod_apply, loc, l):
                     if actor_name not in actor_lookup:
-                        parsingerror(f"unknown actor {actor_name!r}", i, l)
+                        parsingerror(f"unknown actor {actor_name!r}", loc, l)
                     
                     actor = actors[actor_lookup[actor_name]]
                     mod_apply(actor, val)
 
-                def do_modify_all(val, mod_apply, i, l):
+                def do_modify_all(val, mod_apply, loc, l):
                     for a in actors:
                         mod_apply(a, val)
 
@@ -238,9 +283,9 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 try:
                     value_parsed = mod_parse(value)
                 except ValueError as e:
-                    parsingerror(f"invalid value for field {field!r}: {e}", i, l)
+                    parsingerror(f"invalid value for field {field!r}: {e}", loc, l)
 
-                modify_args = (value_parsed, mod_apply, i, l)
+                modify_args = (value_parsed, mod_apply, loc, l)
 
                 if "*" in objects:
                     lazy_modifiers.append((do_modify_all, modify_args))
@@ -258,13 +303,23 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 continue
 
             if cmd.upper() == "LINECOLOR":
-                print("Warning: '!LINECOLOR' is experimental and might be changed")
+                print("Warning: The command '!LINECOLOR' is experimental and might be changed")
                 line_color = args
+                continue
+
+            if cmd.upper() == "DEFAULT_COLORS":
+                print("Warning: The command '!DEFAULT_COLORS' is experimental and might be changed")
+                DEFAULT_COLORS = args.split()
+                continue
+
+            if cmd.upper() == "DEFAULT_HIGHLIGHT_COLORS":
+                print("Warning: The command '!DEFAULT_HIGHLIGHT_COLORS' is experimental and might be changed")
+                DEFAULT_HIGHLIGHT_COLORS = args.split()
                 continue
 
             if cmd.upper() == "ACTOR":
                 name, display_text = splitonce(args)
-                if not name: parsingerror("invalid actor name")
+                if not name: parsingerror("invalid actor name", loc, l)
                 
                 fg_color, bg_color = "#000000", DEFAULT_COLORS[len(actors)%len(DEFAULT_COLORS)] #"#dddddd"
                 hl_color = None
@@ -272,12 +327,12 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 #hl_color = "#ffffff"
                 if name[-1] == "]": # additional args
                     lb = name.find("[")
-                    if lb == -1: parsingerror("invalid actor name", i, l)
+                    if lb == -1: parsingerror("invalid actor name", loc, l)
 
                     args = name[lb+1:-1]
                     name = name[:lb]
                     args = args.split(",")
-                    if len(args) != 2: parsingerror("invalid args", i, l)
+                    if len(args) != 2: parsingerror("invalid args", loc, l)
                     fg_color, bg_color = args
 
                 actor_index = len(actors)
@@ -285,10 +340,16 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 actor_lookup[name] = actor_index
                 continue
             
-            parsingerror(f"unknown command {cmd!r}", i, l)
+            if cmd.upper() == "INCLUDE":
+                include_file = args
+                # line_stream now yields the contents of the file
+                continue
+
+
+            parsingerror(f"unknown command {cmd!r}", loc, l)
             
 
-        parse_message_or_action(l)
+        parse_message_or_action(loc, l)
 
     
     ##### finished parsing, update lazy properties #####

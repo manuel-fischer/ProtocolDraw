@@ -1,5 +1,4 @@
-# The following line is for dark mode on github, !LINECOLOR might be changed in the future
-!LINECOLOR #aaaaaa
+!INCLUDE themes/dark.txt
 
 # Communication between Alice and Bob
 
