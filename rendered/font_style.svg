@@ -1,11 +1,21 @@
 <svg viewBox="-0.5 -0.5 141 171.0" xmlns="http://www.w3.org/2000/svg">
-<rect style="fill:#223366;stroke:#eeeeee;stroke-width:1px" width="140" height="170.0" x="0" y="0" ry="10" />
-<line x1="10" y1="30" x2="130" y2="30" style="stroke:#eeeeee;stroke-width:1px" />
-<text style="text-align:center;text-anchor:middle;fill:#eeeeee;font-weight:bold" x="70.0" y="20">Alice</text>
-<text style="text-align:start;text-anchor:start;fill:#eeeeee;font-weight:bold" x="10" y="50.0">bold</text>
-<text style="text-align:start;text-anchor:start;fill:#eeeeee;font-weight:bold" x="10" y="70.0">bold</text>
-<text style="text-align:start;text-anchor:start;fill:#eeeeee;font-style:italic" x="10" y="90.0">italic</text>
-<text style="text-align:start;text-anchor:start;fill:#eeeeee;font-style:italic" x="10" y="110.0">italic</text>
-<text style="text-align:start;text-anchor:start;fill:#eeeeee;font-weight:bold;font-style:italic" x="10" y="130.0">bold italic</text>
-<text style="text-align:start;text-anchor:start;fill:#eeeeee" x="10" y="150.0">and so on</text>
+<style>
+.style1 {fill:#000000;}
+.style2 {fill:#ddeeff;}
+.style3 {stroke:#000000;}
+@media (prefers-color-scheme:dark) {
+.style1 {fill:#eeeeee;}
+.style2 {fill:#223366;}
+.style3 {stroke:#eeeeee;}
+}
+</style>
+<rect width="140" height="170.0" x="0" y="0" ry="10" style="stroke-width:1px" class="style2 style3" />
+<line x1="10" y1="30" x2="130" y2="30" style="stroke_width:1px" class="style3" />
+<text style="text-align:center;text-anchor:middle;font-weight:bold" x="70.0" y="20" class="style1">Alice</text>
+<text style="text-align:start;text-anchor:start;font-weight:bold" x="10" y="50.0" class="style1">bold</text>
+<text style="text-align:start;text-anchor:start;font-weight:bold" x="10" y="70.0" class="style1">bold</text>
+<text style="text-align:start;text-anchor:start;font-style:italic" x="10" y="90.0" class="style1">italic</text>
+<text style="text-align:start;text-anchor:start;font-style:italic" x="10" y="110.0" class="style1">italic</text>
+<text style="text-align:start;text-anchor:start;font-weight:bold;font-style:italic" x="10" y="130.0" class="style1">bold italic</text>
+<text style="text-align:start;text-anchor:start" x="10" y="150.0" class="style1">and so on</text>
 </svg>

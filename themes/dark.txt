@@ -1,4 +1,4 @@
-# The following line is for dark mode on github, !LINECOLOR might be changed in the future
+# The following is for dark mode on github, !LINECOLOR might be changed in the future
 !LINECOLOR #eeeeee
 !!*.fg-color #eeeeee
 

@@ -1,4 +1,4 @@
-!INCLUDE themes/dark.txt
+!INCLUDE themes/auto.txt
 
 # Communication between Alice and Bob
 

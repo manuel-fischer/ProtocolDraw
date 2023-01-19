@@ -1,0 +1,5 @@
+# The following is for automatic color selection
+!LINECOLOR #000000:#eeeeee
+!!*.fg-color #000000:#eeeeee
+
+!DEFAULT_COLORS #ddeeff:#223366 #ffeedd:#663322 #eeffdd:#336622 #ffffdd:#666622 #ffddff:#662266

@@ -218,10 +218,11 @@ Common declarations might be specified in a shared header file. Such a header fi
 
 > **Syntax File Inclusion**
 >
-> - `!INCLUDE <filename>`
+> - `"!INCLUDE" filename`
 
 **Default Include Files**
 - `!INCLUDE themes/dark.txt` — Changes the colors to a dark mode theme. The default color palette is changed to `#223366` ${\color{#223366}\blacksquare}\hspace{-0.75em}\square$, `#663322` ${\color{#663322}\blacksquare}\hspace{-0.75em}\square$, `#336622` ${\color{#336622}\blacksquare}\hspace{-0.75em}\square$, `#666622` ${\color{#666622}\blacksquare}\hspace{-0.75em}\square$, `#662266` ${\color{#662266}\blacksquare}\hspace{-0.75em}\square$.
+- `!INCLUDE themes/auto.txt` — Select default or dark theme palette based on the operating system preference.
 
 
 **Include Paths**

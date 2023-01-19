@@ -242,6 +242,7 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 def color(c):
                     colors = DEFAULT_COLORS
                     if c[0] == "h":
+                        c = c[:1]
                         colors = DEFAULT_HIGHLIGHT_COLORS
                     try: i = int(c)
                     except ValueError: return c
@@ -368,25 +369,109 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
 
     stroke_width = 1 #0.75
 
+
+    css_light_styles = ""
+    css_dark_styles = ""
+    color_classes = {}
+    style_class_index = 0
+    # return {css_property: ([classes...], style)}
+    def themed_color(css_property, color):
+        nonlocal css_light_styles, css_dark_styles
+        nonlocal style_class_index, color_classes
+        if ":" not in color:
+            return {css_property: ("", color)}
+
+        # light:dark
+        if (css_property, color) in color_classes:
+            return {css_property: (color_classes[css_property, color], "")}
+
+        light_color, dark_color = color.split(":", maxsplit=1)
+
+        style_class_index += 1
+        class_name = f"style{style_class_index}"  
+        css_light_styles += f".{class_name} {{{css_property}:{light_color};}}\n"
+        css_dark_styles += f".{class_name} {{{css_property}:{dark_color};}}\n"
+        color_classes[css_property, color] = class_name
+        return {css_property: (class_name, "")}
+
+
+
+    def svg_tag(name, **properties):
+        if "style" in properties and isinstance(properties["style"], dict):
+            properties = properties.copy()
+
+            def unpack_style(v):
+                # for color tuples `light:dark`
+                if isinstance(v, tuple): return v[1]
+                return v
+            
+            def unpack_classes(v):
+                if isinstance(v, tuple): return v[0]
+                return ""
+
+            properties["class"] = " ".join(
+                unpack_classes(v) for k, v in properties["style"].items() if unpack_classes(v)
+            )
+
+            properties["style"] = ";".join(
+                f"{k}:{unpack_style(v)}" for k, v in properties["style"].items() if unpack_style(v)
+            )
+
+        properties = " ".join(
+            f'{k}="{v}"'
+            for k, v in properties.items() if v != ""
+        )
+        
+        def expect_content(content=None):
+            if content is not None:
+                return f"<{name} {properties}>{content}</{name}>\n"
+            else:
+                return f"<{name} {properties} />\n"
+
+        return expect_content
+
+
     def text(x, y, adjust, color, text, bold=False, italic=False):
         anchor = {"center": "middle", "left": "start", "right": "end"}[adjust]
         align = {"center": "center", "left": "start", "right": "end"}[adjust]
-        more_style = ""
-        if bold: more_style += ";font-weight:bold"
-        if italic: more_style += ";font-style:italic"
 
-        content = escape_xml(fix_amp(text))
-        return f"""<text style="text-align:{align};text-anchor:{anchor};fill:{color}{more_style}" x="{x}" y="{y}">{content}</text>\n"""
+        return svg_tag("text", 
+            style={
+                "text-align": align,
+                "text-anchor": anchor,
+                "font-weight":"bold"*bold,
+                "font-style":"italic"*italic,
+                **themed_color("fill", color),
+            },
+            x=x,
+            y=y,
+        )(content=escape_xml(fix_amp(text)))
+
 
     def line(x0, y0, x1, y1, color):
-        #return f"""<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}" stroke="black" />\n"""
-        return f"""<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}" style="stroke:{color};stroke-width:{stroke_width}px" />\n"""
+        return svg_tag("line",
+            x1=x0, y1=y0,
+            x2=x1, y2=y1,
+            style={
+                **themed_color("stroke", color),
+                "stroke_width": f"{stroke_width}px",
+            }
+        )()
+
 
     # x, y in alternating order
     def path(*points, color):
         assert points and len(points) % 2 == 0
         d = "M" + " ".join(f"{x},{y}" for x,y in zip(points[0::2],points[1::2]))
-        return f"""<path d="{d}" style="fill:none;stroke:{color};stroke-width:{stroke_width}px" />\n"""
+        return svg_tag("path",
+            d=d,
+            style={
+                "fill":"none",
+                **themed_color("stroke", color),
+                "stroke-width":f"{stroke_width}px",
+            }
+        )()
+
 
     def arrow(x0, y0, x1, y1, color):
         t = 5
@@ -399,9 +484,20 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
         )
 
     def rect(x, y, w, h, ry, color, stroke_width : "int|None" = stroke_width, border_color="#000000"):
-        stroke = ""
-        if stroke_width is not None: stroke = f";stroke:{border_color};stroke-width:{stroke_width}px"
-        return f"""<rect style="fill:{color}{stroke}" width="{w}" height="{h}" x="{x}" y="{y}" ry="{ry}" />\n"""
+
+        return svg_tag("rect",
+            width=w,
+            height=h,
+            x=x, y=y, ry=ry,
+            style={
+                **themed_color("fill", color),
+                **({
+                    **themed_color("stroke", border_color),
+                    "stroke-width":f"{stroke_width}px",
+                } if stroke_width is not None else {})
+            }
+        )()
+
 
     def actor_left(i):
         #return i*(actor_width+msg_width)
@@ -415,11 +511,12 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
         return (actor_left(i)+actor_right(i))/2
 
     for i, actor in enumerate(actors):
-        text_elements += text(actor_center(i), line_height*name_offset,
-            adjust="center", 
-            color=actor.fg_color,
-            text=make_bold(actor.display_text),
-            bold=True)
+        if actor.display_text:
+            text_elements += text(actor_center(i), line_height*name_offset,
+                adjust="center", 
+                color=actor.fg_color,
+                text=make_bold(actor.display_text),
+                bold=True)
 
     for e in elements:
         if isinstance(e, Message):
@@ -449,10 +546,11 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
 
             y = cursor+msg_height*0.5
             draw_elements += arrow(sx, y, dx, y, line_color)
-            text_elements += text((sx+dx)/2, y-msg_txtup,
-                adjust="center", 
-                color=line_color,
-                text=e.msg)#f"{{\\footnotesize {e.msg}}}")
+            if e.msg:
+                text_elements += text((sx+dx)/2, y-msg_txtup,
+                    adjust="center", 
+                    color=line_color,
+                    text=e.msg)#f"{{\\footnotesize {e.msg}}}")
 
         elif isinstance(e, Action):
             action = e.action
@@ -526,7 +624,10 @@ def convert_to_svg(game_description : str, filename : str, line_offset : int=1) 
                 y = 30
                 rect_elements += line(lt+leftpad, y, lt+wd-leftpad, y, actor.fg_color)
 
-    svg = rect_elements + draw_elements + text_elements
+    css_dark_styles = f"""@media (prefers-color-scheme:dark) {{\n{css_dark_styles}}}\n"""
+    style = f"""<style>\n{css_light_styles}{css_dark_styles}</style>\n"""
+
+    svg = style + rect_elements + draw_elements + text_elements
 
     svg = f"""<svg viewBox="-0.5 -0.5 {svgw+1} {svgh+1}" xmlns="http://www.w3.org/2000/svg">\n{svg}</svg>\n"""
     

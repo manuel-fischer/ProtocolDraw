@@ -1,4 +1,4 @@
-!INCLUDE themes/dark.txt
+!INCLUDE themes/auto.txt
 
 !ACTOR A Alice
 !ACTOR B Bob
